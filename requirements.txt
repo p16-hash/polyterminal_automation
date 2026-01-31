@@ -1,0 +1,23 @@
+# =============================================================================
+# Polymarket Trading Bot - Python Dependencies
+# =============================================================================
+# Install with: pip install -r requirements.txt
+# =============================================================================
+
+# Polymarket CLOB Client - official SDK for trading
+py-clob-client>=0.19.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Web3 for blockchain interactions
+web3>=6.0.0
+
+# WebSocket for real-time data
+websocket-client>=1.6.0
+
+# HTTP requests (for Telegram and APIs)
+requests>=2.28.0
+
+# Ethereum account management
+eth-account>=0.8.0
