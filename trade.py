@@ -1,61 +1,48 @@
 import time
 
-class ArbitrageBot:
-    def __init__(self, max_position_size, profit_threshold, execution_speed):
-        self.max_position_size = max_position_size
-        self.profit_threshold = profit_threshold
-        self.execution_speed = execution_speed
-        self.positions = {}  # Track positions for YES/NO pairs
-        self.arbitrage_profits = []  # Store arbitrage profits
+class TradingStrategy:
+    def __init__(self):
+        self.limit_orders = []
 
-    def scan_pairs(self):
-        # This function would connect to your market data feed
-        # and return pairs of prices (yes_price, no_price)
-        pairs = self.get_market_data()
-        for yes_price, no_price in pairs:
-            if self.is_profitable(yes_price, no_price):
-                self.execute_market_order(yes_price, no_price)
+    def place_limit_order(self, side, price, amount):
+        order = {'side': side, 'price': price, 'amount': amount, 'timestamp': time.time()}
+        self.limit_orders.append(order)
+        return order
 
-    def is_profitable(self, yes_price, no_price):
-        total_cost = yes_price + no_price
-        return total_cost < 0.99
+    def check_orders(self):
+        current_time = time.time()
+        for order in self.limit_orders[:]:  # Copy to avoid modification during iteration
+            if current_time - order['timestamp'] > 180:
+                # Cancel the order if it has been open for more than 3 minutes
+                self.cancel_order(order)
 
-    def execute_market_order(self, yes_price, no_price):
-        position_size = self.calculate_position_size(yes_price, no_price)
-        if position_size > 0:
-            # Execute market orders
-            self.place_order('YES', position_size, yes_price)
-            self.place_order('NO', position_size, no_price)
-            self.log_trade(yes_price, no_price, position_size)
+    def cancel_order(self, order):
+        print(f"Cancelling order: {order}")
+        self.limit_orders.remove(order)
 
-    def calculate_position_size(self, yes_price, no_price):
-        total_cost = yes_price + no_price
-        if total_cost < self.max_position_size:
-            return self.max_position_size // total_cost
-        return 0
+    def execute_trade(self):
+        # Implement your trading execution logic here
+        # Automatically sell and restart the round if only one side fills
+        filled_orders = [order for order in self.limit_orders if self.is_filled(order)]
+        if len(filled_orders) == 1:
+            self.sell_and_restart(filled_orders[0])
 
-    def place_order(self, side, size, price):
-        # This would interface with your trading API to place an order
-        print(f'Placing {side} order of size {size} at price {price}')
-        self.track_profit(size, price)
+    def is_filled(self, order):
+        # Placeholder implementation for checking if an order is filled
+        return False  # Modify based on your conditions
 
-    def track_profit(self, size, price):
-        profit = size * price - self.max_position_size
-        self.arbitrage_profits.append(profit)
+    def sell_and_restart(self, filled_order):
+        print(f"Selling filled order: {filled_order}")
+        self.limit_orders.clear()  # Clear unfilled orders
+        # Restart the process for the next trading round
 
-    def log_trade(self, yes_price, no_price, position_size):
-        print(f'Executed trade - YES Price: {yes_price}, NO Price: {no_price}, Size: {position_size}')
+# Example usage of the TradingStrategy class
+trading_strategy = TradingStrategy()
 
-    def run(self):
-        while True:
-            self.scan_pairs()
-            time.sleep(self.execution_speed)
+# Place some limit orders
+trading_strategy.place_limit_order('buy', 100, 1)
+trading_strategy.place_limit_order('sell', 105, 1)
 
-    def get_market_data(self):
-        # Placeholder for market data fetching logic
-        return [(0.48, 0.50), (0.49, 0.49)]  # Example pairs
-
-# Example configuration
-if __name__ == '__main__':
-    bot = ArbitrageBot(max_position_size=100, profit_threshold=0.01, execution_speed=1)
-    bot.run()
+# Check orders and execute trades accordingly
+trading_strategy.check_orders()
+trading_strategy.execute_trade()
