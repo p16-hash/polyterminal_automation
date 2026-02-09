@@ -21,7 +21,8 @@ from web3.middleware import ExtraDataToPOAMiddleware
 load_dotenv()
 
 PRIVATE_KEY = os.getenv("PRIVATE_KEY", "")
-RPC_URL = "https://rpc.ankr.com/polygon/cc878ed5ff293701a1d80d59ceff575a7f5ee2f6ac80e1a56e29865537b490ba"
+# FIXED: Use public unrestricted endpoint (or respect .env)
+RPC_URL = os.getenv("RPC_URL", "https://polygon-bor-rpc.publicnode.com")
 
 USDC_BRIDGED = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"  # Bridged USDC (main for Polymarket)
 USDC_NATIVE = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"   # USDC.e Native
@@ -46,6 +47,8 @@ def main():
     if not PRIVATE_KEY or not PRIVATE_KEY.startswith("0x"):
         print("ERROR: PRIVATE_KEY must be set in .env and start with 0x")
         return
+    
+    print(f"Using RPC: {RPC_URL}")  # Debug: confirm endpoint
     
     web3 = Web3(Web3.HTTPProvider(RPC_URL))
     web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
@@ -129,7 +132,6 @@ Swap here:
 - QuickSwap: https://quickswap.exchange/#/swap
 - 1inch: https://app.1inch.io/#/137/simple/swap/USDC.e/USDC
 """)
-
 
 if __name__ == "__main__":
     main()
