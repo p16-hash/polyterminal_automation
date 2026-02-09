@@ -1,48 +1,54 @@
-import time
+# trade.py
 
-class TradingStrategy:
+# Define the constants
+ARBITRAGE_LIMIT_PRICE = 100  # Example value
+ARBITRAGE_PROFIT_PERCENTAGE = 5  # Example value
+
+class LimitOrderRound:
     def __init__(self):
-        self.limit_orders = []
+        self.rounds = []
 
-    def place_limit_order(self, side, price, amount):
-        order = {'side': side, 'price': price, 'amount': amount, 'timestamp': time.time()}
-        self.limit_orders.append(order)
-        return order
+    def track_round(self, round_data):
+        self.rounds.append(round_data)
 
-    def check_orders(self):
-        current_time = time.time()
-        for order in self.limit_orders[:]:  # Copy to avoid modification during iteration
-            if current_time - order['timestamp'] > 180:
-                # Cancel the order if it has been open for more than 3 minutes
-                self.cancel_order(order)
+    def get_rounds(self):
+        return self.rounds
 
-    def cancel_order(self, order):
-        print(f"Cancelling order: {order}")
-        self.limit_orders.remove(order)
+def calculate_arbitrage_metrics(price, profit_percentage):
+    if price < ARBITRAGE_LIMIT_PRICE:
+        return False, "Price below arbitrage limit."
+    if profit_percentage < ARBITRAGE_PROFIT_PERCENTAGE:
+        return False, "Profit percentage below required."
+    return True, "Arbitrage metrics met."
 
-    def execute_trade(self):
-        # Implement your trading execution logic here
-        # Automatically sell and restart the round if only one side fills
-        filled_orders = [order for order in self.limit_orders if self.is_filled(order)]
-        if len(filled_orders) == 1:
-            self.sell_and_restart(filled_orders[0])
+def execute_trade():
+    import time
+    start_time = time.time()
+    round_tracker = LimitOrderRound()
+   
+    while True:
+        if time.time() - start_time > 180:  # 3 minutes timeout
+            print("Execution timeout, stopping the trade.")
+            break
 
-    def is_filled(self, order):
-        # Placeholder implementation for checking if an order is filled
-        return False  # Modify based on your conditions
+        # Replace this with actual trade logic
+        price = get_current_price()
+        profit_percentage = calculate_profit_percentage()
 
-    def sell_and_restart(self, filled_order):
-        print(f"Selling filled order: {filled_order}")
-        self.limit_orders.clear()  # Clear unfilled orders
-        # Restart the process for the next trading round
+        # Check for arbitrage opportunity
+        is_arbitrage, message = calculate_arbitrage_metrics(price, profit_percentage)
+        if is_arbitrage:
+            # Proceed with trade logic
+            pass  
+        else:
+            print(message)
 
-# Example usage of the TradingStrategy class
-trading_strategy = TradingStrategy()
+        # Implement stop-loss logic
+        if should_stop_loss():
+            print("Stop loss triggered.")
+            break
 
-# Place some limit orders
-trading_strategy.place_limit_order('buy', 100, 1)
-trading_strategy.place_limit_order('sell', 105, 1)
+        # Enhanced dry-run mode logic here
+        print("Dry-run details:", {"price": price, "profit_percentage": profit_percentage})
 
-# Check orders and execute trades accordingly
-trading_strategy.check_orders()
-trading_strategy.execute_trade()
+        time.sleep(1)  # Polling interval
