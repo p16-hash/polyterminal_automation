@@ -36,7 +36,7 @@ except:
     logger = None
 
 # Polygon RPC
-POLYGON_RPC = "https://rpc.ankr.com/polygon/cc878ed5ff293701a1d80d59ceff575a7f5ee2f6ac80e1a56e29865537b490ba"
+POLYGON_RPC = os.getenv("RPC_URL", "https://polygon-bor-rpc.publicnode.com")
 
 # Contract addresses
 USDC_ADDRESS = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"  # USDC on Polygon (6 decimals)
